@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
-import 'package:csslib/visitor.dart' as css;
 import 'package:csslib/parser.dart' as cssparser;
+import 'package:csslib/visitor.dart' as css;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -19,17 +19,36 @@ Style declarationsToStyle(Map<String, List<css.Expression>> declarations) {
           break;
         case 'border':
           List<css.LiteralTerm?>? borderWidths = value.whereType<css.LiteralTerm>().toList();
+
           /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.width], so make sure to remove those before passing it to [ExpressionMapping]
-          borderWidths.removeWhere((element) => element == null || (element.text != "thin"
-              && element.text != "medium" && element.text != "thick"
-              && !(element is css.LengthTerm) && !(element is css.PercentageTerm)
-              && !(element is css.EmTerm) && !(element is css.RemTerm)
-              && !(element is css.NumberTerm))
-          );
-          List<css.Expression?>? borderColors = value.where((element) => ExpressionMapping.expressionToColor(element) != null).toList();
+          borderWidths.removeWhere((element) =>
+              element == null ||
+              (element.text != "thin" &&
+                  element.text != "medium" &&
+                  element.text != "thick" &&
+                  !(element is css.LengthTerm) &&
+                  !(element is css.PercentageTerm) &&
+                  !(element is css.EmTerm) &&
+                  !(element is css.RemTerm) &&
+                  !(element is css.NumberTerm)));
+          List<css.Expression?>? borderColors =
+              value.where((element) => ExpressionMapping.expressionToColor(element) != null).toList();
           List<css.LiteralTerm?>? potentialStyles = value.whereType<css.LiteralTerm>().toList();
+
           /// Currently doesn't matter, as Flutter only supports "solid" or "none", but may support more in the future.
-          List<String> possibleBorderValues = ["dotted", "dashed", "solid", "double", "groove", "ridge", "inset", "outset", "none", "hidden"];
+          List<String> possibleBorderValues = [
+            "dotted",
+            "dashed",
+            "solid",
+            "double",
+            "groove",
+            "ridge",
+            "inset",
+            "outset",
+            "none",
+            "hidden"
+          ];
+
           /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.style], so make sure to remove those before passing it to [ExpressionMapping]
           potentialStyles.removeWhere((element) => element == null || !possibleBorderValues.contains(element.text));
           List<css.LiteralTerm?>? borderStyles = potentialStyles;
@@ -37,135 +56,223 @@ Style declarationsToStyle(Map<String, List<css.Expression>> declarations) {
           break;
         case 'border-left':
           List<css.LiteralTerm?>? borderWidths = value.whereType<css.LiteralTerm>().toList();
+
           /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.width], so make sure to remove those before passing it to [ExpressionMapping]
-          borderWidths.removeWhere((element) => element == null || (element.text != "thin"
-              && element.text != "medium" && element.text != "thick"
-              && !(element is css.LengthTerm) && !(element is css.PercentageTerm)
-              && !(element is css.EmTerm) && !(element is css.RemTerm)
-              && !(element is css.NumberTerm))
-          );
+          borderWidths.removeWhere((element) =>
+              element == null ||
+              (element.text != "thin" &&
+                  element.text != "medium" &&
+                  element.text != "thick" &&
+                  !(element is css.LengthTerm) &&
+                  !(element is css.PercentageTerm) &&
+                  !(element is css.EmTerm) &&
+                  !(element is css.RemTerm) &&
+                  !(element is css.NumberTerm)));
           css.LiteralTerm? borderWidth = borderWidths.firstWhereOrNull((element) => element != null);
-          css.Expression? borderColor = value.firstWhereOrNull((element) => ExpressionMapping.expressionToColor(element) != null);
+          css.Expression? borderColor =
+              value.firstWhereOrNull((element) => ExpressionMapping.expressionToColor(element) != null);
           List<css.LiteralTerm?>? potentialStyles = value.whereType<css.LiteralTerm>().toList();
+
           /// Currently doesn't matter, as Flutter only supports "solid" or "none", but may support more in the future.
-          List<String> possibleBorderValues = ["dotted", "dashed", "solid", "double", "groove", "ridge", "inset", "outset", "none", "hidden"];
+          List<String> possibleBorderValues = [
+            "dotted",
+            "dashed",
+            "solid",
+            "double",
+            "groove",
+            "ridge",
+            "inset",
+            "outset",
+            "none",
+            "hidden"
+          ];
+
           /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.style], so make sure to remove those before passing it to [ExpressionMapping]
           potentialStyles.removeWhere((element) => element == null || !possibleBorderValues.contains(element.text));
-          css.LiteralTerm borderStyle = potentialStyles.first!;
-          Border newBorder = Border(
-            left: style.border?.left.copyWith(
-              width: ExpressionMapping.expressionToBorderWidth(borderWidth),
-              style: ExpressionMapping.expressionToBorderStyle(borderStyle),
-              color: ExpressionMapping.expressionToColor(borderColor),
-            ) ?? BorderSide(
-              width: ExpressionMapping.expressionToBorderWidth(borderWidth),
-              style: ExpressionMapping.expressionToBorderStyle(borderStyle),
-              color: ExpressionMapping.expressionToColor(borderColor) ?? Colors.black,
-            ),
-            right: style.border?.right ?? BorderSide.none,
-            top: style.border?.top ?? BorderSide.none,
-            bottom: style.border?.bottom ?? BorderSide.none,
-          );
-          style.border = newBorder;
+          if (potentialStyles.isNotEmpty) {
+            css.LiteralTerm borderStyle = potentialStyles.first!;
+            Border newBorder = Border(
+              left: style.border?.left.copyWith(
+                    width: ExpressionMapping.expressionToBorderWidth(borderWidth),
+                    style: ExpressionMapping.expressionToBorderStyle(borderStyle),
+                    color: ExpressionMapping.expressionToColor(borderColor),
+                  ) ??
+                  BorderSide(
+                    width: ExpressionMapping.expressionToBorderWidth(borderWidth),
+                    style: ExpressionMapping.expressionToBorderStyle(borderStyle),
+                    color: ExpressionMapping.expressionToColor(borderColor) ?? Colors.black,
+                  ),
+              right: style.border?.right ?? BorderSide.none,
+              top: style.border?.top ?? BorderSide.none,
+              bottom: style.border?.bottom ?? BorderSide.none,
+            );
+            style.border = newBorder;
+          }
           break;
         case 'border-right':
           List<css.LiteralTerm?>? borderWidths = value.whereType<css.LiteralTerm>().toList();
+
           /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.width], so make sure to remove those before passing it to [ExpressionMapping]
-          borderWidths.removeWhere((element) => element == null || (element.text != "thin"
-              && element.text != "medium" && element.text != "thick"
-              && !(element is css.LengthTerm) && !(element is css.PercentageTerm)
-              && !(element is css.EmTerm) && !(element is css.RemTerm)
-              && !(element is css.NumberTerm))
-          );
+          borderWidths.removeWhere((element) =>
+              element == null ||
+              (element.text != "thin" &&
+                  element.text != "medium" &&
+                  element.text != "thick" &&
+                  !(element is css.LengthTerm) &&
+                  !(element is css.PercentageTerm) &&
+                  !(element is css.EmTerm) &&
+                  !(element is css.RemTerm) &&
+                  !(element is css.NumberTerm)));
           css.LiteralTerm? borderWidth = borderWidths.firstWhereOrNull((element) => element != null);
-          css.Expression? borderColor = value.firstWhereOrNull((element) => ExpressionMapping.expressionToColor(element) != null);
+          css.Expression? borderColor =
+              value.firstWhereOrNull((element) => ExpressionMapping.expressionToColor(element) != null);
           List<css.LiteralTerm?>? potentialStyles = value.whereType<css.LiteralTerm>().toList();
+
           /// Currently doesn't matter, as Flutter only supports "solid" or "none", but may support more in the future.
-          List<String> possibleBorderValues = ["dotted", "dashed", "solid", "double", "groove", "ridge", "inset", "outset", "none", "hidden"];
+          List<String> possibleBorderValues = [
+            "dotted",
+            "dashed",
+            "solid",
+            "double",
+            "groove",
+            "ridge",
+            "inset",
+            "outset",
+            "none",
+            "hidden"
+          ];
+
           /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.style], so make sure to remove those before passing it to [ExpressionMapping]
           potentialStyles.removeWhere((element) => element == null || !possibleBorderValues.contains(element.text));
-          css.LiteralTerm borderStyle = potentialStyles.first!;
-          Border newBorder = Border(
-            left: style.border?.left ?? BorderSide.none,
-            right: style.border?.right.copyWith(
-              width: ExpressionMapping.expressionToBorderWidth(borderWidth),
-              style: ExpressionMapping.expressionToBorderStyle(borderStyle),
-              color: ExpressionMapping.expressionToColor(borderColor),
-            ) ?? BorderSide(
-              width: ExpressionMapping.expressionToBorderWidth(borderWidth),
-              style: ExpressionMapping.expressionToBorderStyle(borderStyle),
-              color: ExpressionMapping.expressionToColor(borderColor) ?? Colors.black,
-            ),
-            top: style.border?.top ?? BorderSide.none,
-            bottom: style.border?.bottom ?? BorderSide.none,
-          );
-          style.border = newBorder;
+          if (potentialStyles.isNotEmpty) {
+            css.LiteralTerm borderStyle = potentialStyles.first!;
+            Border newBorder = Border(
+              left: style.border?.left ?? BorderSide.none,
+              right: style.border?.right.copyWith(
+                    width: ExpressionMapping.expressionToBorderWidth(borderWidth),
+                    style: ExpressionMapping.expressionToBorderStyle(borderStyle),
+                    color: ExpressionMapping.expressionToColor(borderColor),
+                  ) ??
+                  BorderSide(
+                    width: ExpressionMapping.expressionToBorderWidth(borderWidth),
+                    style: ExpressionMapping.expressionToBorderStyle(borderStyle),
+                    color: ExpressionMapping.expressionToColor(borderColor) ?? Colors.black,
+                  ),
+              top: style.border?.top ?? BorderSide.none,
+              bottom: style.border?.bottom ?? BorderSide.none,
+            );
+            style.border = newBorder;
+          }
           break;
         case 'border-top':
           List<css.LiteralTerm?>? borderWidths = value.whereType<css.LiteralTerm>().toList();
+
           /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.width], so make sure to remove those before passing it to [ExpressionMapping]
-          borderWidths.removeWhere((element) => element == null || (element.text != "thin"
-              && element.text != "medium" && element.text != "thick"
-              && !(element is css.LengthTerm) && !(element is css.PercentageTerm)
-              && !(element is css.EmTerm) && !(element is css.RemTerm)
-              && !(element is css.NumberTerm))
-          );
+          borderWidths.removeWhere((element) =>
+              element == null ||
+              (element.text != "thin" &&
+                  element.text != "medium" &&
+                  element.text != "thick" &&
+                  !(element is css.LengthTerm) &&
+                  !(element is css.PercentageTerm) &&
+                  !(element is css.EmTerm) &&
+                  !(element is css.RemTerm) &&
+                  !(element is css.NumberTerm)));
           css.LiteralTerm? borderWidth = borderWidths.firstWhereOrNull((element) => element != null);
-          css.Expression? borderColor = value.firstWhereOrNull((element) => ExpressionMapping.expressionToColor(element) != null);
+          css.Expression? borderColor =
+              value.firstWhereOrNull((element) => ExpressionMapping.expressionToColor(element) != null);
           List<css.LiteralTerm?>? potentialStyles = value.whereType<css.LiteralTerm>().toList();
+
           /// Currently doesn't matter, as Flutter only supports "solid" or "none", but may support more in the future.
-          List<String> possibleBorderValues = ["dotted", "dashed", "solid", "double", "groove", "ridge", "inset", "outset", "none", "hidden"];
+          List<String> possibleBorderValues = [
+            "dotted",
+            "dashed",
+            "solid",
+            "double",
+            "groove",
+            "ridge",
+            "inset",
+            "outset",
+            "none",
+            "hidden"
+          ];
+
           /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.style], so make sure to remove those before passing it to [ExpressionMapping]
           potentialStyles.removeWhere((element) => element == null || !possibleBorderValues.contains(element.text));
-          css.LiteralTerm borderStyle = potentialStyles.first!;
-          Border newBorder = Border(
-            left: style.border?.left ?? BorderSide.none,
-            right: style.border?.right ?? BorderSide.none,
-            top: style.border?.top.copyWith(
-              width: ExpressionMapping.expressionToBorderWidth(borderWidth),
-              style: ExpressionMapping.expressionToBorderStyle(borderStyle),
-              color: ExpressionMapping.expressionToColor(borderColor),
-            ) ?? BorderSide(
-              width: ExpressionMapping.expressionToBorderWidth(borderWidth),
-              style: ExpressionMapping.expressionToBorderStyle(borderStyle),
-              color: ExpressionMapping.expressionToColor(borderColor) ?? Colors.black,
-            ),
-            bottom: style.border?.bottom ?? BorderSide.none,
-          );
-          style.border = newBorder;
+          if (potentialStyles.isNotEmpty) {
+            css.LiteralTerm borderStyle = potentialStyles.first!;
+            Border newBorder = Border(
+              left: style.border?.left ?? BorderSide.none,
+              right: style.border?.right ?? BorderSide.none,
+              top: style.border?.top.copyWith(
+                    width: ExpressionMapping.expressionToBorderWidth(borderWidth),
+                    style: ExpressionMapping.expressionToBorderStyle(borderStyle),
+                    color: ExpressionMapping.expressionToColor(borderColor),
+                  ) ??
+                  BorderSide(
+                    width: ExpressionMapping.expressionToBorderWidth(borderWidth),
+                    style: ExpressionMapping.expressionToBorderStyle(borderStyle),
+                    color: ExpressionMapping.expressionToColor(borderColor) ?? Colors.black,
+                  ),
+              bottom: style.border?.bottom ?? BorderSide.none,
+            );
+            style.border = newBorder;
+          }
           break;
         case 'border-bottom':
           List<css.LiteralTerm?>? borderWidths = value.whereType<css.LiteralTerm>().toList();
+
           /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.width], so make sure to remove those before passing it to [ExpressionMapping]
-          borderWidths.removeWhere((element) => element == null || (element.text != "thin"
-              && element.text != "medium" && element.text != "thick"
-              && !(element is css.LengthTerm) && !(element is css.PercentageTerm)
-              && !(element is css.EmTerm) && !(element is css.RemTerm)
-              && !(element is css.NumberTerm))
-          );
+          borderWidths.removeWhere((element) =>
+              element == null ||
+              (element.text != "thin" &&
+                  element.text != "medium" &&
+                  element.text != "thick" &&
+                  !(element is css.LengthTerm) &&
+                  !(element is css.PercentageTerm) &&
+                  !(element is css.EmTerm) &&
+                  !(element is css.RemTerm) &&
+                  !(element is css.NumberTerm)));
           css.LiteralTerm? borderWidth = borderWidths.firstWhereOrNull((element) => element != null);
-          css.Expression? borderColor = value.firstWhereOrNull((element) => ExpressionMapping.expressionToColor(element) != null);
+          css.Expression? borderColor =
+              value.firstWhereOrNull((element) => ExpressionMapping.expressionToColor(element) != null);
           List<css.LiteralTerm?>? potentialStyles = value.whereType<css.LiteralTerm>().toList();
+
           /// Currently doesn't matter, as Flutter only supports "solid" or "none", but may support more in the future.
-          List<String> possibleBorderValues = ["dotted", "dashed", "solid", "double", "groove", "ridge", "inset", "outset", "none", "hidden"];
+          List<String> possibleBorderValues = [
+            "dotted",
+            "dashed",
+            "solid",
+            "double",
+            "groove",
+            "ridge",
+            "inset",
+            "outset",
+            "none",
+            "hidden"
+          ];
+
           /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.style], so make sure to remove those before passing it to [ExpressionMapping]
           potentialStyles.removeWhere((element) => element == null || !possibleBorderValues.contains(element.text));
-          css.LiteralTerm borderStyle = potentialStyles.first!;
-          Border newBorder = Border(
-            left: style.border?.left ?? BorderSide.none,
-            right: style.border?.right ?? BorderSide.none,
-            top: style.border?.top ?? BorderSide.none,
-            bottom: style.border?.bottom.copyWith(
-              width: ExpressionMapping.expressionToBorderWidth(borderWidth),
-              style: ExpressionMapping.expressionToBorderStyle(borderStyle),
-              color: ExpressionMapping.expressionToColor(borderColor),
-            ) ?? BorderSide(
-              width: ExpressionMapping.expressionToBorderWidth(borderWidth),
-              style: ExpressionMapping.expressionToBorderStyle(borderStyle),
-              color: ExpressionMapping.expressionToColor(borderColor) ?? Colors.black,
-            ),
-          );
-          style.border = newBorder;
+          if (potentialStyles.isNotEmpty) {
+            css.LiteralTerm borderStyle = potentialStyles.first!;
+            Border newBorder = Border(
+              left: style.border?.left ?? BorderSide.none,
+              right: style.border?.right ?? BorderSide.none,
+              top: style.border?.top ?? BorderSide.none,
+              bottom: style.border?.bottom.copyWith(
+                    width: ExpressionMapping.expressionToBorderWidth(borderWidth),
+                    style: ExpressionMapping.expressionToBorderStyle(borderStyle),
+                    color: ExpressionMapping.expressionToColor(borderColor),
+                  ) ??
+                  BorderSide(
+                    width: ExpressionMapping.expressionToBorderWidth(borderWidth),
+                    style: ExpressionMapping.expressionToBorderStyle(borderStyle),
+                    color: ExpressionMapping.expressionToColor(borderColor) ?? Colors.black,
+                  ),
+            );
+            style.border = newBorder;
+          }
           break;
         case 'color':
           style.color = ExpressionMapping.expressionToColor(value.first) ?? style.color;
@@ -196,17 +303,19 @@ Style declarationsToStyle(Map<String, List<css.Expression>> declarations) {
           break;
         case 'list-style-type':
           if (value.first is css.LiteralTerm) {
-            style.listStyleType = ExpressionMapping.expressionToListStyleType(value.first as css.LiteralTerm) ?? style.listStyleType;
+            style.listStyleType =
+                ExpressionMapping.expressionToListStyleType(value.first as css.LiteralTerm) ?? style.listStyleType;
           }
           break;
         case 'margin':
           List<css.LiteralTerm>? marginLengths = value.whereType<css.LiteralTerm>().toList();
+
           /// List<css.LiteralTerm> might include other values than the ones we want for margin length, so make sure to remove those before passing it to [ExpressionMapping]
-          marginLengths.removeWhere((element) => !(element is css.LengthTerm)
-              && !(element is css.EmTerm)
-              && !(element is css.RemTerm)
-              && !(element is css.NumberTerm)
-          );
+          marginLengths.removeWhere((element) =>
+              !(element is css.LengthTerm) &&
+              !(element is css.EmTerm) &&
+              !(element is css.RemTerm) &&
+              !(element is css.NumberTerm));
           List<double?> margin = ExpressionMapping.expressionToPadding(marginLengths);
           style.margin = (style.margin ?? EdgeInsets.zero).copyWith(
             left: margin[0],
@@ -216,29 +325,30 @@ Style declarationsToStyle(Map<String, List<css.Expression>> declarations) {
           );
           break;
         case 'margin-left':
-          style.margin = (style.margin ?? EdgeInsets.zero).copyWith(
-              left: ExpressionMapping.expressionToPaddingLength(value.first));
+          style.margin = (style.margin ?? EdgeInsets.zero)
+              .copyWith(left: ExpressionMapping.expressionToPaddingLength(value.first));
           break;
         case 'margin-right':
-          style.margin = (style.margin ?? EdgeInsets.zero).copyWith(
-              right: ExpressionMapping.expressionToPaddingLength(value.first));
+          style.margin = (style.margin ?? EdgeInsets.zero)
+              .copyWith(right: ExpressionMapping.expressionToPaddingLength(value.first));
           break;
         case 'margin-top':
-          style.margin = (style.margin ?? EdgeInsets.zero).copyWith(
-              top: ExpressionMapping.expressionToPaddingLength(value.first));
+          style.margin =
+              (style.margin ?? EdgeInsets.zero).copyWith(top: ExpressionMapping.expressionToPaddingLength(value.first));
           break;
         case 'margin-bottom':
-          style.margin = (style.margin ?? EdgeInsets.zero).copyWith(
-              bottom: ExpressionMapping.expressionToPaddingLength(value.first));
+          style.margin = (style.margin ?? EdgeInsets.zero)
+              .copyWith(bottom: ExpressionMapping.expressionToPaddingLength(value.first));
           break;
         case 'padding':
           List<css.LiteralTerm>? paddingLengths = value.whereType<css.LiteralTerm>().toList();
+
           /// List<css.LiteralTerm> might include other values than the ones we want for padding length, so make sure to remove those before passing it to [ExpressionMapping]
-          paddingLengths.removeWhere((element) => !(element is css.LengthTerm)
-              && !(element is css.EmTerm)
-              && !(element is css.RemTerm)
-              && !(element is css.NumberTerm)
-          );
+          paddingLengths.removeWhere((element) =>
+              !(element is css.LengthTerm) &&
+              !(element is css.EmTerm) &&
+              !(element is css.RemTerm) &&
+              !(element is css.NumberTerm));
           List<double?> padding = ExpressionMapping.expressionToPadding(paddingLengths);
           style.padding = (style.padding ?? EdgeInsets.zero).copyWith(
             left: padding[0],
@@ -248,42 +358,55 @@ Style declarationsToStyle(Map<String, List<css.Expression>> declarations) {
           );
           break;
         case 'padding-left':
-          style.padding = (style.padding ?? EdgeInsets.zero).copyWith(
-              left: ExpressionMapping.expressionToPaddingLength(value.first));
+          style.padding = (style.padding ?? EdgeInsets.zero)
+              .copyWith(left: ExpressionMapping.expressionToPaddingLength(value.first));
           break;
         case 'padding-right':
-          style.padding = (style.padding ?? EdgeInsets.zero).copyWith(
-              right: ExpressionMapping.expressionToPaddingLength(value.first));
+          style.padding = (style.padding ?? EdgeInsets.zero)
+              .copyWith(right: ExpressionMapping.expressionToPaddingLength(value.first));
           break;
         case 'padding-top':
-          style.padding = (style.padding ?? EdgeInsets.zero).copyWith(
-              top: ExpressionMapping.expressionToPaddingLength(value.first));
+          style.padding = (style.padding ?? EdgeInsets.zero)
+              .copyWith(top: ExpressionMapping.expressionToPaddingLength(value.first));
           break;
         case 'padding-bottom':
-          style.padding = (style.padding ?? EdgeInsets.zero).copyWith(
-              bottom: ExpressionMapping.expressionToPaddingLength(value.first));
+          style.padding = (style.padding ?? EdgeInsets.zero)
+              .copyWith(bottom: ExpressionMapping.expressionToPaddingLength(value.first));
           break;
         case 'text-align':
           style.textAlign = ExpressionMapping.expressionToTextAlign(value.first);
           break;
         case 'text-decoration':
           List<css.LiteralTerm?>? textDecorationList = value.whereType<css.LiteralTerm>().toList();
+
           /// List<css.LiteralTerm> might include other values than the ones we want for [textDecorationList], so make sure to remove those before passing it to [ExpressionMapping]
-          textDecorationList.removeWhere((element) => element == null || (element.text != "none"
-              && element.text != "overline" && element.text != "underline" && element.text != "line-through"));
+          textDecorationList.removeWhere((element) =>
+              element == null ||
+              (element.text != "none" &&
+                  element.text != "overline" &&
+                  element.text != "underline" &&
+                  element.text != "line-through"));
           List<css.Expression?>? nullableList = value;
           css.Expression? textDecorationColor;
-          textDecorationColor = nullableList.firstWhereOrNull(
-                  (element) => element is css.HexColorTerm || element is css.FunctionTerm);
+          textDecorationColor =
+              nullableList.firstWhereOrNull((element) => element is css.HexColorTerm || element is css.FunctionTerm);
           List<css.LiteralTerm?>? potentialStyles = value.whereType<css.LiteralTerm>().toList();
+
           /// List<css.LiteralTerm> might include other values than the ones we want for [textDecorationStyle], so make sure to remove those before passing it to [ExpressionMapping]
-          potentialStyles.removeWhere((element) => element == null || (element.text != "solid"
-              && element.text != "double" && element.text != "dashed" && element.text != "dotted" && element.text != "wavy"));
+          potentialStyles.removeWhere((element) =>
+              element == null ||
+              (element.text != "solid" &&
+                  element.text != "double" &&
+                  element.text != "dashed" &&
+                  element.text != "dotted" &&
+                  element.text != "wavy"));
           css.LiteralTerm? textDecorationStyle = potentialStyles.isNotEmpty ? potentialStyles.last : null;
           style.textDecoration = ExpressionMapping.expressionToTextDecorationLine(textDecorationList);
-          if (textDecorationColor != null) style.textDecorationColor = ExpressionMapping.expressionToColor(textDecorationColor)
-              ?? style.textDecorationColor;
-          if (textDecorationStyle != null) style.textDecorationStyle = ExpressionMapping.expressionToTextDecorationStyle(textDecorationStyle);
+          if (textDecorationColor != null)
+            style.textDecorationColor =
+                ExpressionMapping.expressionToColor(textDecorationColor) ?? style.textDecorationColor;
+          if (textDecorationStyle != null)
+            style.textDecorationStyle = ExpressionMapping.expressionToTextDecorationStyle(textDecorationStyle);
           break;
         case 'text-decoration-color':
           style.textDecorationColor = ExpressionMapping.expressionToColor(value.first) ?? style.textDecorationColor;
@@ -380,8 +503,8 @@ class DeclarationVisitor extends css.Visitor {
 
 //Mapping functions
 class ExpressionMapping {
-
-  static Border expressionToBorder(List<css.Expression?>? borderWidths, List<css.LiteralTerm?>? borderStyles, List<css.Expression?>? borderColors) {
+  static Border expressionToBorder(
+      List<css.Expression?>? borderWidths, List<css.LiteralTerm?>? borderStyles, List<css.Expression?>? borderColors) {
     CustomBorderSide left = CustomBorderSide();
     CustomBorderSide top = CustomBorderSide();
     CustomBorderSide right = CustomBorderSide();
@@ -459,8 +582,7 @@ class ExpressionMapping {
         top: BorderSide(width: top.width, color: top.color ?? Colors.black, style: top.style),
         right: BorderSide(width: right.width, color: right.color ?? Colors.black, style: right.style),
         bottom: BorderSide(width: bottom.width, color: bottom.color ?? Colors.black, style: bottom.style),
-        left: BorderSide(width: left.width, color: left.color ?? Colors.black, style: left.style)
-    );
+        left: BorderSide(width: left.width, color: left.color ?? Colors.black, style: left.style));
   }
 
   static double expressionToBorderWidth(css.Expression? value) {
@@ -513,7 +635,7 @@ class ExpressionMapping {
 
   static TextDirection expressionToDirection(css.Expression value) {
     if (value is css.LiteralTerm) {
-      switch(value.text) {
+      switch (value.text) {
         case "ltr":
           return TextDirection.ltr;
         case "rtl":
@@ -525,7 +647,7 @@ class ExpressionMapping {
 
   static Display expressionToDisplay(css.Expression value) {
     if (value is css.LiteralTerm) {
-      switch(value.text) {
+      switch (value.text) {
         case 'block':
           return Display.BLOCK;
         case 'inline-block':
@@ -548,8 +670,9 @@ class ExpressionMapping {
       if (exp is css.LiteralTerm) {
         if (exp.text != "on" && exp.text != "off" && exp.text != "1" && exp.text != "0") {
           if (i < value.length - 1) {
-            css.Expression nextExp = value[i+1];
-            if (nextExp is css.LiteralTerm && (nextExp.text == "on" || nextExp.text == "off" || nextExp.text == "1" || nextExp.text == "0")) {
+            css.Expression nextExp = value[i + 1];
+            if (nextExp is css.LiteralTerm &&
+                (nextExp.text == "on" || nextExp.text == "off" || nextExp.text == "1" || nextExp.text == "0")) {
               fontFeatures.add(FontFeature(exp.text, nextExp.text == "on" || nextExp.text == "1" ? 1 : 0));
             } else {
               fontFeatures.add(FontFeature.enable(exp.text));
@@ -598,7 +721,7 @@ class ExpressionMapping {
 
   static FontStyle expressionToFontStyle(css.Expression value) {
     if (value is css.LiteralTerm) {
-      switch(value.text) {
+      switch (value.text) {
         case "italic":
         case "oblique":
           return FontStyle.italic;
@@ -631,7 +754,7 @@ class ExpressionMapping {
           return FontWeight.w900;
       }
     } else if (value is css.LiteralTerm) {
-      switch(value.text) {
+      switch (value.text) {
         case "bold":
           return FontWeight.bold;
         case "bolder":
@@ -736,7 +859,7 @@ class ExpressionMapping {
 
   static TextAlign expressionToTextAlign(css.Expression value) {
     if (value is css.LiteralTerm) {
-      switch(value.text) {
+      switch (value.text) {
         case "center":
           return TextAlign.center;
         case "left":
@@ -758,7 +881,7 @@ class ExpressionMapping {
     List<TextDecoration> decorationList = [];
     for (css.LiteralTerm? term in value) {
       if (term != null) {
-        switch(term.text) {
+        switch (term.text) {
           case "overline":
             decorationList.add(TextDecoration.overline);
             break;
@@ -779,7 +902,7 @@ class ExpressionMapping {
   }
 
   static TextDecorationStyle expressionToTextDecorationStyle(css.LiteralTerm value) {
-    switch(value.text) {
+    switch (value.text) {
       case "wavy":
         return TextDecorationStyle.wavy;
       case "dotted":
@@ -818,25 +941,25 @@ class ExpressionMapping {
         if (exp3 != null && ExpressionMapping.expressionToColor(exp3) != null) {
           shadow.add(Shadow(
               color: expressionToColor(exp3)!,
-              offset: Offset(double.tryParse(exp.text.replaceAll(nonNumberRegex, ''))!, double.tryParse(exp2.text.replaceAll(nonNumberRegex, ''))!)
-          ));
+              offset: Offset(double.tryParse(exp.text.replaceAll(nonNumberRegex, ''))!,
+                  double.tryParse(exp2.text.replaceAll(nonNumberRegex, ''))!)));
         } else if (exp3 != null && exp3 is css.LiteralTerm) {
           if (exp4 != null && ExpressionMapping.expressionToColor(exp4) != null) {
             shadow.add(Shadow(
                 color: expressionToColor(exp4)!,
-                offset: Offset(double.tryParse(exp.text.replaceAll(nonNumberRegex, ''))!, double.tryParse(exp2.text.replaceAll(nonNumberRegex, ''))!),
-                blurRadius: double.tryParse(exp3.text.replaceAll(nonNumberRegex, ''))!
-            ));
+                offset: Offset(double.tryParse(exp.text.replaceAll(nonNumberRegex, ''))!,
+                    double.tryParse(exp2.text.replaceAll(nonNumberRegex, ''))!),
+                blurRadius: double.tryParse(exp3.text.replaceAll(nonNumberRegex, ''))!));
           } else {
             shadow.add(Shadow(
-                offset: Offset(double.tryParse(exp.text.replaceAll(nonNumberRegex, ''))!, double.tryParse(exp2.text.replaceAll(nonNumberRegex, ''))!),
-                blurRadius: double.tryParse(exp3.text.replaceAll(nonNumberRegex, ''))!
-            ));
+                offset: Offset(double.tryParse(exp.text.replaceAll(nonNumberRegex, ''))!,
+                    double.tryParse(exp2.text.replaceAll(nonNumberRegex, ''))!),
+                blurRadius: double.tryParse(exp3.text.replaceAll(nonNumberRegex, ''))!));
           }
         } else {
           shadow.add(Shadow(
-              offset: Offset(double.tryParse(exp.text.replaceAll(nonNumberRegex, ''))!, double.tryParse(exp2.text.replaceAll(nonNumberRegex, ''))!)
-          ));
+              offset: Offset(double.tryParse(exp.text.replaceAll(nonNumberRegex, ''))!,
+                  double.tryParse(exp2.text.replaceAll(nonNumberRegex, ''))!)));
         }
       }
     }
@@ -848,9 +971,7 @@ class ExpressionMapping {
     var text = _text.replaceFirst('#', '');
     if (text.length == 3)
       text = text.replaceAllMapped(
-          RegExp(r"[a-f]|\d", caseSensitive: false),
-          (match) => '${match.group(0)}${match.group(0)}'
-      );
+          RegExp(r"[a-f]|\d", caseSensitive: false), (match) => '${match.group(0)}${match.group(0)}');
     if (text.length > 6) {
       text = "0x" + text;
     } else {
@@ -862,8 +983,7 @@ class ExpressionMapping {
   static Color? rgbOrRgbaToColor(String text) {
     final rgbaText = text.replaceAll(')', '').replaceAll(' ', '');
     try {
-      final rgbaValues =
-      rgbaText.split(',').map((value) => double.parse(value)).toList();
+      final rgbaValues = rgbaText.split(',').map((value) => double.parse(value)).toList();
       if (rgbaValues.length == 4) {
         return Color.fromRGBO(
           rgbaValues[0].toInt(),
@@ -904,13 +1024,16 @@ class ExpressionMapping {
       return HSLColor.fromAHSL(parsedHsl.last!, parsedHsl.first!, parsedHsl[1]!, parsedHsl[2]!).toColor();
     } else if (parsedHsl.length == 3 && !parsedHsl.contains(null)) {
       return HSLColor.fromAHSL(1.0, parsedHsl.first!, parsedHsl[1]!, parsedHsl.last!).toColor();
-    } else return Colors.black;
+    } else
+      return Colors.black;
   }
 
   static Color? namedColorToColor(String text) {
-     String namedColor = namedColors.keys.firstWhere((element) => element.toLowerCase() == text.toLowerCase(), orElse: () => "");
-     if (namedColor != "") {
-       return stringToColor(namedColors[namedColor]!);
-     } else return null;
+    String namedColor =
+        namedColors.keys.firstWhere((element) => element.toLowerCase() == text.toLowerCase(), orElse: () => "");
+    if (namedColor != "") {
+      return stringToColor(namedColors[namedColor]!);
+    } else
+      return null;
   }
 }
