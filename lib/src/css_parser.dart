@@ -933,7 +933,7 @@ class ExpressionMapping {
     }
     for (List<css.Expression> list in valueList) {
       css.Expression exp = list[0];
-      css.Expression exp2 = list[1];
+      css.Expression? exp2 = list.length > 1 ? list[1] : null;
       css.LiteralTerm? exp3 = list.length > 2 ? list[2] as css.LiteralTerm? : null;
       css.LiteralTerm? exp4 = list.length > 3 ? list[3] as css.LiteralTerm? : null;
       RegExp nonNumberRegex = RegExp(r'\s+(\d+\.\d+)\s+');
